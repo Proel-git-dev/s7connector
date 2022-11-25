@@ -25,6 +25,10 @@ import com.github.s7connector.api.factory.S7ConnectorFactory;
  */
 public class PlainTutorialExample
 {
+        private static short MakeWordFromBytes(byte b1, byte b2)
+        {
+            return (short) (Byte.toUnsignedInt(b1) + (Byte.toUnsignedInt(b2) << 8));
+        }
 	
 	public static void main(String[] args) throws Exception
 	{
@@ -32,19 +36,32 @@ public class PlainTutorialExample
 		S7Connector connector = 
 				S7ConnectorFactory
 				.buildTCPConnector()
-				.withHost("10.0.0.220")
+				.withHost("192.168.100.222")
 				.withRack(0)
-				.withSlot(2)
+				.withSlot(0)
 				.build();
 		
-		//Read from DB100 10 bytes
-		byte[] bs = connector.read(DaveArea.DB, 100, 10, 0);
-		
 		//Set some bytes
-		bs[0] = 0x00;
+		byte[] bw = new byte[32];
+                // sedamnaesti bajt nije povezan s nicim u PLC programu, sluzi samo za test
+                java.util.Random rand = new java.util.Random();
+                bw[16] = (byte)rand.nextInt();
 		
-		//Write to DB100 10 bytes
-		connector.write(DaveArea.DB, 101, 0, bs);
+		//Write to DB51 32 bytes
+		connector.write(DaveArea.DB, 51, 0, bw);
+                
+                //Read from DB50 32 bytes
+                // ovo je povratni slog prema serveru, sadrzavat ce informacije s PLC-a
+		byte[] br = connector.read(DaveArea.DB, 50, 32, 0);
+                
+                
+                System.out.println("Statusni bajt: " + String.format("0x%02X", br[0]));
+                
+                short w = MakeWordFromBytes(br[27], br[26]);
+                System.out.println("Testna rijec 1: " + String.format("0x%02X", w));
+                w = MakeWordFromBytes(br[29], br[28]);
+                System.out.println("Testna rijec 2: " + String.format("0x%02X", w));
+                
 		
 		//Close connection
 		connector.close();
