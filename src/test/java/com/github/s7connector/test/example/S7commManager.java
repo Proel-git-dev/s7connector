@@ -85,7 +85,7 @@ public class S7commManager {
         
         if (SynchroBit)
         {
-            msg[1] = (byte)(msg[0] | 0x02);
+            msg[1] = (byte)(msg[1] | 0x02);
         }
         
         if (S7conn != null)
